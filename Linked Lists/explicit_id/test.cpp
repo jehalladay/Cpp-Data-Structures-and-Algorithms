@@ -29,11 +29,11 @@ int main() {
     // cout << "Contents of Index 2: " << first.get(2) << endl; 
 
 
-    cout << "length: " << first.length << endl;
+    cout << "length: " << first.length() << endl;
 
     first.delete_item(1);
 
-    cout << "length: " << first.length << endl;
+    cout << "length: " << first.length() << endl;
 
     // should abort with message "Index does not exist"
     // first.delete_item(2);

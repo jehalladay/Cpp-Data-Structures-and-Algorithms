@@ -15,20 +15,27 @@ struct list_link {
 template <class N>
 class List {
     private:
-        typedef list_link<N> slice;
-        slice *head, *tail;
-        bool empty();
+        typedef list_link<N> element;
+        element *head, *tail;
+        int _length;
     public:
+        
         // constructors
+
         List();
-        int length;
-        // traverse, insert, delete, get, exists
+
+        // length, empty, traverse, insert, delete, get, exists
+
+        int length();
+        bool empty();
         void traverse();
         bool traverse(void(*)(N));
         void insert(N, int);
         void delete_item(int);
-        N get(int);
+        N& get(int);
         bool exists(int);
+
+        // overloaded operators
 
         N& operator [] (int i);
 };
@@ -38,8 +45,8 @@ class List {
 template <class N>
 List<N>::List() {
 
-    head = new slice;
-    tail = new slice;
+    head = new element;
+    tail = new element;
 
     head->link = tail;
     tail->link = NULL;
@@ -47,9 +54,13 @@ List<N>::List() {
     head->id = -1;
     tail->id = 99999999;
 
-    length = 0;
+    _length = 0;
 }
 
+template <class N>
+int List<N>::length() {
+    return _length; 
+}
 
 template <class N>
 bool List<N>::empty() {
@@ -59,7 +70,7 @@ bool List<N>::empty() {
 
 template <class N>
 void List<N>::delete_item(int id) {
-    slice *prior, *next, *c;
+    element *prior, *next, *c;
 
     if(!empty()) {
         prior = head;
@@ -75,7 +86,7 @@ void List<N>::delete_item(int id) {
         if(id == c->id) {
             prior->link = next;
             delete c;
-            length--;
+            _length--;
         } else {
             cout << "Index does not exist" << endl;
             throw;
@@ -89,8 +100,8 @@ void List<N>::delete_item(int id) {
 
 template <class N>
 void List<N>::insert(N item, int id) {
-    slice *new_item = new slice;
-    slice *prior, *next;
+    element *new_item = new element;
+    element *prior, *next;
     bool unique_id = true;
 
     new_item->id = id;
@@ -108,7 +119,7 @@ void List<N>::insert(N item, int id) {
     if(unique_id) {
         prior->link = new_item;
         new_item->link = next;
-        length++;
+        _length++;
     } else {
         cout << "Index is not unique" << endl;
         throw;
@@ -118,7 +129,7 @@ void List<N>::insert(N item, int id) {
 
 template <class N>
 void List<N>::traverse() {
-    slice *c;
+    element *c;
 
     if(!empty()) {
         c = head->link;
@@ -137,7 +148,7 @@ void List<N>::traverse() {
 
 template <class N>
 bool List<N>::traverse(void (*fn)(N)) {
-    slice *c;
+    element *c;
 
     if(!empty()) {
         c = head->link;
@@ -153,8 +164,8 @@ bool List<N>::traverse(void (*fn)(N)) {
 
 
 template <class N>
-N List<N>::get(int id) {
-    slice *prior, *next, *c;
+N& List<N>::get(int id) {
+    element *prior, *next, *c;
 
     if(!empty()) {
         prior = head;
@@ -176,10 +187,36 @@ N List<N>::get(int id) {
     } 
 }
 
+
+template <class N>
+N& List<N>::operator[] (int id) {
+    element *prior, *next, *c;
+
+    if(!empty()) {
+        prior = head;
+        c = head->link;
+        next = c->link;
+
+        while(next != tail && id > c->id) {
+            prior = c;
+            c = next; 
+            next = next->link;
+        }
+
+        if(id == c->id) {
+            return c->data;
+        } else {
+            cout << "Index does not exist" << endl;
+            throw;
+        }
+    } 
+}
+
+
 template <class N>
 bool List<N>::exists(int id) {
     bool here = false;
-    slice *prior, *next, *c;
+    element *prior, *next, *c;
 
     if(!empty()) {
         prior = head;
