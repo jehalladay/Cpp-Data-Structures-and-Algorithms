@@ -5,6 +5,7 @@
         "list": "cpp",
         "ostream": "cpp",
         "initializer_list": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "set": "cpp"
     }
 }

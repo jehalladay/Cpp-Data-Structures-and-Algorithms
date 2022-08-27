@@ -6,35 +6,43 @@
 using namespace std; 
 
 template <class N>
-struct list_link {
+struct set_link {
     int id;
-    list_link *next;
-    list_link *prior;
+    set_link *next;
+    set_link *prior;
     N data;
 };
 
 template <class N>
-class List {
+class Set {
     private:
-        typedef list_link<N> element;
-        element *head, *tail;
+        typedef set_link<N> member;
+        member *head, *tail;
+        int _length;
     public:
         // constructors
 
-        List();
-        int length;
+        Set();
+        int length();
 
         // empty, traverse, push, unshift, delete, pop, shift, get
 
         bool empty();
         void traverse();
         bool traverse(void(*)(N));
+        bool traverse(void(*)(N, int));
         void push(N);
         void unshift(N);
         void delete_item(int);
         N pop();
         N shift();
         N& get(int);
+
+        template <class M>
+        Set<M> map(M (*)(N));
+
+        template <class M>
+        Set<M> map(M (*)(N, int));
 
         // overloaded operators
 
@@ -44,10 +52,10 @@ class List {
 
 
 template <class N>
-List<N>::List() {
+Set<N>::Set() {
 
-    head = new element;
-    tail = new element;
+    head = new member;
+    tail = new member;
 
     head->next = tail;
     tail->prior = head;
@@ -58,27 +66,32 @@ List<N>::List() {
     head->id = -1;
     tail->id = 9999999;
 
-    length = 0;
+    _length = 0;
 }
 
 
 template <class N>
-bool List<N>::empty() {
+int Set<N>::length() {
+    return _length; 
+}
+
+template <class N>
+bool Set<N>::empty() {
     return head->next == tail;
 }
 
 
 template <class N>
-void List<N>::delete_item(int id) {
-    element *prior, *next, *c;
+void Set<N>::delete_item(int id) {
+    member *prior, *next, *c;
     int split;
 
-    if(empty() || id >= length || id < 0) {
+    if(empty() || id >= _length || id < 0) {
         cout << "Index does not exist" << endl;
         throw;
     } 
 
-    split = length/2 - 1;
+    split = _length/2 - 1;
 
     if(id <= split) {
         prior = head;
@@ -105,15 +118,15 @@ void List<N>::delete_item(int id) {
     next->prior = prior;
     prior->next = next;
     delete c;
-    length--;
+    _length--;
 }
 
 
 template <class N>
-void List<N>::push(N item) {
-    element *new_item = new element, *c = tail->prior;
+void Set<N>::push(N item) {
+    member *new_item = new member, *c = tail->prior;
 
-    new_item->id = length;
+    new_item->id = _length;
     new_item->data = item;
 
 
@@ -123,14 +136,14 @@ void List<N>::push(N item) {
     new_item->prior = c;
     tail->prior = new_item;
 
-    length++;
+    _length++;
 }
 
 
 template <class N>
-void List<N>::unshift(N item) {
-    element *new_item = new element;
-    element *c;
+void Set<N>::unshift(N item) {
+    member *new_item = new member;
+    member *c;
 
     new_item->id = 0;
     new_item->data = item;
@@ -140,7 +153,7 @@ void List<N>::unshift(N item) {
     
     new_item->next = head->next;
     head->next = new_item;
-    length++;
+    _length++;
 
     c = new_item->next;
 
@@ -152,8 +165,8 @@ void List<N>::unshift(N item) {
 
 
 template <class N>
-void List<N>::traverse() {
-    element *c;
+void Set<N>::traverse() {
+    member *c;
 
     if(!empty()) {
         c = head->next;
@@ -165,14 +178,14 @@ void List<N>::traverse() {
         }
 
     } else {
-        cout << "The list is empty!" << endl;
+        cout << "The Set is empty!" << endl;
     }
 }
 
 
 template <class N>
-bool List<N>::traverse(void (*fn)(N)) {
-    element *c;
+bool Set<N>::traverse(void (*fn)(N)) {
+    member *c;
 
     if(!empty()) {
         c = head->next;
@@ -188,12 +201,33 @@ bool List<N>::traverse(void (*fn)(N)) {
 
 
 template <class N>
-N List<N>::shift(){
-    element *c, *item;
+bool Set<N>::traverse(void (*fn)(N, int)) {
+    member *c;
+    int index = 0;
+
+    if(!empty()) {
+        c = head->next;
+
+        while(c != tail) {
+            fn(c->data, index);
+            index++;
+            c = c->next;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+
+template <class N>
+N Set<N>::shift(){
+    member *c, *item;
     N data;
 
     if (empty()) {
-        cout << "List is empty, cannot shift" << endl;
+        cout << "Set is empty, cannot shift" << endl;
         throw;
     }
 
@@ -208,18 +242,18 @@ N List<N>::shift(){
 
     data = item->data;
     delete item;
-    length--;
+    _length--;
 
     return data;
 }
 
 
 template <class N>
-N List<N>::pop() {
-    element *c;
+N Set<N>::pop() {
+    member *c;
     N data;
     if(empty()){
-        cout << "Cannot pop, list is empty" << endl;
+        cout << "Cannot pop, Set is empty" << endl;
         throw;
     }
 
@@ -229,23 +263,23 @@ N List<N>::pop() {
     
     data = c->data;
     delete c;
-    length--;
+    _length--;
     
     return data;
 }
 
 
 template <class N>
-N& List<N>::get(int id) {
-    element *prior, *next, *c;
+N& Set<N>::get(int id) {
+    member *prior, *next, *c;
     int split; 
 
-    if(empty() || id >= length || id < 0) {
+    if(empty() || id >= _length || id < 0) {
         cout << "Index does not exist" << endl;
         throw;
     }
 
-    split = length/2 - 1;
+    split = _length/2 - 1;
 
     if(id <= split) {
         prior = head;
@@ -274,16 +308,58 @@ N& List<N>::get(int id) {
 
 
 template <class N>
-N& List<N>::operator[](int id) {
-    element *prior, *next, *c;
+template <class M>
+Set<M> Set<N>::map(M (*fn)(N)) {
+    Set<M> new_list;
+    member *c;
+
+    if(!empty()) {
+
+        c = head->next;
+
+        while(c != tail) {
+            new_list.push(fn(c->data));
+            c = c->next;
+        }
+    }
+    
+    return new_list;
+}
+
+
+template <class N>
+template <class M>
+Set<M> Set<N>::map(M (*fn)(N, int)) {
+    Set<M> new_list;
+    member *c;
+    int index = 0;
+
+    if(!empty()) {
+
+        c = head->next;
+
+        while(c != tail) {
+            new_list.push(fn(c->data, index));
+            index++;
+            c = c->next;
+        }
+    }
+    
+    return new_list;
+}
+
+
+template <class N>
+N& Set<N>::operator[](int id) {
+    member *prior, *next, *c;
     int split; 
 
-    if(empty() || id >= length || id < 0) {
+    if(empty() || id >= _length || id < 0) {
         cout << "Index does not exist" << endl;
         throw;
     }
 
-    split = length/2 - 1;
+    split = _length/2 - 1;
 
     if(id <= split) {
         prior = head;
